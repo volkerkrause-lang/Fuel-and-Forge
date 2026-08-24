@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-dark: #0a0a0a;
+    --card-dark: #141414;
+    --card-elevated: #1a1a1a;
+    --card-border: rgba(255, 255, 255, 0.06);
+    --gold-primary: #d4af37;
+    --gold-hover: #b8962e;
+    --gold-dark: #8a6d1e;
+    --gold-subtle: rgba(212, 175, 55, 0.15);
+    --gold-border: rgba(212, 175, 55, 0.3);
+    --gold-glow: rgba(212, 175, 55, 0.25);
+    --text-primary: #e0e0e0;
+    --text-secondary: #9ca3af;
+    --text-muted: #6b7280;
+    --emerald-accent: #10b981;
+  }
+
+  body {
+    background-color: #0a0a0a;
+    color: #e0e0e0;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+}
+
+.serif {
+  font-family: 'Cinzel', 'Playfair Display', 'Georgia', serif;
+}
+
+.font-serif {
+  font-family: 'Cinzel', 'Playfair Display', 'Georgia', serif;
+}
+
+.gold-text {
+  color: #d4af37;
+}
+
+.gold-border {
+  border-color: rgba(212, 175, 55, 0.3);
+}
+
+.card-bg {
+  background-color: #141414;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.card-elevated {
+  background-color: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Custom gold scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #262626;
+  border-radius: 9999px;
+  border: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
+}
+
+@keyframes goldPulse {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.2), inset 0 0 15px rgba(212, 175, 55, 0.08);
+  }
+  50% {
+    box-shadow: 0 0 28px rgba(212, 175, 55, 0.45), inset 0 0 20px rgba(212, 175, 55, 0.25);
+  }
+}
+
+.animate-gold-pulse {
+  animation: goldPulse 3s ease-in-out infinite;
+}
+
+.animate-ember-pulse {
+  animation: goldPulse 3s ease-in-out infinite;
+}
