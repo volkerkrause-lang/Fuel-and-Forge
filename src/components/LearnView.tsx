@@ -1,23 +1,24 @@
 import React, { useState } from 'react';
-import { BookOpen, Bookmark, CheckCircle, Search } from 'lucide-react';
+import { BookOpen, Bookmark, Search, Trash2 } from 'lucide-react';
 import { LearningArticle } from '../types';
 
 interface LearnViewProps {
   articles: LearningArticle[];
-  onToggleLearned: (id: string) => void;
-  onToggleSaved: (id: string) => void;
+  onSaveToLibrary: (id: string) => void;
+  onDiscard: (id: string) => void;
 }
 
 export const LearnView: React.FC<LearnViewProps> = ({
   articles,
-  onToggleLearned,
-  onToggleSaved,
+  onSaveToLibrary,
+  onDiscard,
 }) => {
   const [activeCategory, setActiveCategory] = useState<'All' | 'Nutrition' | 'Training' | 'Saved'>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedArticle, setSelectedArticle] = useState<LearningArticle | null>(null);
 
   const filteredArticles = articles.filter((a) => {
+    if (activeCategory !== 'Saved' && a.isLearned) return false;
     if (activeCategory === 'Nutrition' && a.category !== 'Nutrition') return false;
     if (activeCategory === 'Training' && a.category !== 'Training') return false;
     if (activeCategory === 'Saved' && !a.isSavedForLater) return false;
@@ -88,7 +89,7 @@ export const LearnView: React.FC<LearnViewProps> = ({
 
       {/* Articles Grid */}
       <div className="space-y-3">
-        {filteredArticles.map((article) => (
+        {filteredArticles.slice(0, activeCategory === 'Saved' || searchQuery ? undefined : 1).map((article) => (
           <div
             key={article.id}
             className={`card-bg rounded-xl p-4 shadow-lg transition-all space-y-2.5 ${
@@ -111,7 +112,7 @@ export const LearnView: React.FC<LearnViewProps> = ({
 
               <div className="flex items-center space-x-1">
                 <button
-                  onClick={() => onToggleSaved(article.id)}
+                  onClick={() => onSaveToLibrary(article.id)}
                   className={`p-1.5 rounded-lg border transition-colors ${
                     article.isSavedForLater
                       ? 'bg-[#221c0e] border-[#d4af37]/50 text-[#d4af37]'
@@ -121,18 +122,8 @@ export const LearnView: React.FC<LearnViewProps> = ({
                 >
                   <Bookmark className="w-3.5 h-3.5" />
                 </button>
+                {!article.isSavedForLater && <button onClick={() => onDiscard(article.id)} className="p-1.5 rounded-lg border bg-[#181818] border-white/5 text-gray-500 hover:text-rose-300" title="Read and discard"><Trash2 className="w-3.5 h-3.5" /></button>}
 
-                <button
-                  onClick={() => onToggleLearned(article.id)}
-                  className={`p-1.5 rounded-lg border transition-colors ${
-                    article.isLearned
-                      ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300'
-                      : 'bg-[#181818] border-white/5 text-gray-500 hover:text-gray-300'
-                  }`}
-                  title={article.isLearned ? 'Mark as unlearned' : 'Mark as learned'}
-                >
-                  <CheckCircle className="w-3.5 h-3.5" />
-                </button>
               </div>
             </div>
 
@@ -191,13 +182,14 @@ export const LearnView: React.FC<LearnViewProps> = ({
             <div className="flex items-center space-x-2 pt-2">
               <button
                 onClick={() => {
-                  onToggleLearned(selectedArticle.id);
+                  onSaveToLibrary(selectedArticle.id);
                   setSelectedArticle(null);
                 }}
-                className="w-full py-2.5 rounded-lg bg-[#d4af37] hover:bg-[#b8962e] text-black font-bold text-xs uppercase tracking-widest transition-all shadow-[0_0_12px_rgba(212,175,55,0.25)]"
+                className="flex-1 py-2.5 rounded-lg bg-[#d4af37] hover:bg-[#b8962e] text-black font-bold text-xs uppercase tracking-widest transition-all shadow-[0_0_12px_rgba(212,175,55,0.25)]"
               >
-                {selectedArticle.isLearned ? 'Keep Completed' : 'Mark as Learned ✓'}
+                Save to library
               </button>
+              <button onClick={() => { onDiscard(selectedArticle.id); setSelectedArticle(null); }} className="flex-1 py-2.5 rounded-lg bg-[#181818] border border-white/10 text-gray-200 font-bold text-xs uppercase tracking-wider">Read & discard</button>
             </div>
           </div>
         </div>
