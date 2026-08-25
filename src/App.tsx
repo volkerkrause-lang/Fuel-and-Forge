@@ -258,26 +258,25 @@ export const App: React.FC = () => {
     }
   };
 
-  const handleToggleWeeklyWorkout = (slot: number) => {
-    const now = new Date();
-    const monday = new Date(now);
-    monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
-    monday.setHours(0, 0, 0, 0);
-    const sunday = new Date(monday);
-    sunday.setDate(monday.getDate() + 7);
-    const weekly = sessions
-      .filter((s) => s.isCompleted && new Date(`${s.date}T00:00:00`) >= monday && new Date(`${s.date}T00:00:00`) < sunday)
-      .sort((a, b) => a.startTime - b.startTime);
-
+  const handleToggleWeeklyWorkout = (date: string) => {
+    const completedSession = sessions.find((s) => s.date === date && s.isCompleted);
     let updated: WorkoutSession[];
-    if (slot < weekly.length) {
-      updated = sessions.filter((s) => s.id !== weekly[slot].id);
+    if (completedSession?.id.startsWith('quick_')) {
+      updated = sessions.filter((s) => s.id !== completedSession.id);
+    } else if (completedSession) {
+      return;
     } else {
-      const quick = StorageService.createSessionFromRoutine(routine, new Date().toISOString().split('T')[0]);
+      const quick = StorageService.createSessionFromRoutine(routine, date);
       updated = [{ ...quick, id: `quick_${Date.now()}`, endTime: Date.now(), isCompleted: true, exercises: [] }, ...sessions];
     }
     setSessions(updated);
     StorageService.saveWorkoutSessions(updated);
+  };
+
+  const handleWeeklyTargetChange = (targetWorkoutsPerWeek: number) => {
+    const updated = { ...settings, targetWorkoutsPerWeek: Math.max(3, targetWorkoutsPerWeek) };
+    setSettings(updated);
+    StorageService.saveSettings(updated);
   };
 
   // --- Measurement Actions ---
@@ -310,16 +309,16 @@ export const App: React.FC = () => {
   };
 
   // --- Learning Article Actions ---
-  const handleToggleLearnedArticle = (id: string) => {
-    const updated = articles.map((a) => (a.id === id ? { ...a, isLearned: !a.isLearned } : a));
+  const handleSaveArticleToLibrary = (id: string) => {
+    const updated = articles.map((a) =>
+      a.id === id ? { ...a, isSavedForLater: true, isLearned: true } : a
+    );
     setArticles(updated);
     StorageService.saveArticles(updated);
   };
 
-  const handleToggleSavedArticle = (id: string) => {
-    const updated = articles.map((a) =>
-      a.id === id ? { ...a, isSavedForLater: !a.isSavedForLater } : a
-    );
+  const handleDiscardArticle = (id: string) => {
+    const updated = articles.filter((a) => a.id !== id);
     setArticles(updated);
     StorageService.saveArticles(updated);
   };
@@ -418,6 +417,7 @@ export const App: React.FC = () => {
               sessions={sessions}
               target={settings.targetWorkoutsPerWeek || 3}
               onToggle={handleToggleWeeklyWorkout}
+              onTargetChange={handleWeeklyTargetChange}
             />
 
             {/* Fuel Gauge Card */}
@@ -569,8 +569,8 @@ export const App: React.FC = () => {
             {moreSubTab === 'learn' && (
               <LearnView
                 articles={articles}
-                onToggleLearned={handleToggleLearnedArticle}
-                onToggleSaved={handleToggleSavedArticle}
+                onSaveToLibrary={handleSaveArticleToLibrary}
+                onDiscard={handleDiscardArticle}
               />
             )}
           </div>
