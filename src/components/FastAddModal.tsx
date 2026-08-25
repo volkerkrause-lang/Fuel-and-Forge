@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { X, Plus, Search, Utensils, Zap, Barcode } from 'lucide-react';
 import { Food, Meal, MealSlot, FoodLog } from '../types';
+import { searchUsdaFoods } from '../services/foodDataCentral';
 
 interface FastAddModalProps {
   isOpen: boolean;
@@ -24,6 +25,9 @@ export const FastAddModal: React.FC<FastAddModalProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'fast' | 'foods' | 'custom' | 'barcode'>('fast');
   const [selectedMultiplier, setSelectedMultiplier] = useState<number>(1.0);
+  const [usdaFoods, setUsdaFoods] = useState<Food[]>([]);
+  const [isSearchingUsda, setIsSearchingUsda] = useState(false);
+  const [usdaError, setUsdaError] = useState('');
 
   // Custom food quick form
   const [customName, setCustomName] = useState('');
@@ -31,6 +35,18 @@ export const FastAddModal: React.FC<FastAddModalProps> = ({
   const [customProtein, setCustomProtein] = useState<number | ''>('');
   const [customCarbs, setCustomCarbs] = useState<number | ''>('');
   const [customFat, setCustomFat] = useState<number | ''>('');
+
+  useEffect(() => {
+    if (!isOpen || activeTab !== 'foods' || searchQuery.trim().length < 2) { setUsdaFoods([]); return; }
+    const controller = new AbortController();
+    const timer = window.setTimeout(async () => {
+      setIsSearchingUsda(true); setUsdaError('');
+      try { setUsdaFoods(await searchUsdaFoods(searchQuery.trim(), controller.signal)); }
+      catch (error) { if ((error as Error).name !== 'AbortError') setUsdaError('USDA lookup is temporarily unavailable. Local foods are still shown.'); }
+      finally { setIsSearchingUsda(false); }
+    }, 350);
+    return () => { window.clearTimeout(timer); controller.abort(); };
+  }, [isOpen, activeTab, searchQuery]);
 
   if (!isOpen) return null;
 
@@ -262,7 +278,10 @@ export const FastAddModal: React.FC<FastAddModalProps> = ({
               </div>
 
               <div className="space-y-2">
-                {filteredFoods.map((food) => (
+                {isSearchingUsda && <p className="text-xs text-gray-400">Searching USDA FoodData Central…</p>}
+                {usdaError && <p className="text-[11px] text-amber-300">{usdaError}</p>}
+                {usdaFoods.length > 0 && <p className="text-[10px] uppercase tracking-wider text-emerald-300">USDA FoodData Central · values per 100 g</p>}
+                {[...usdaFoods, ...filteredFoods].map((food) => (
                   <button
                     key={food.id}
                     onClick={() => handleAddFood(food)}
@@ -276,6 +295,7 @@ export const FastAddModal: React.FC<FastAddModalProps> = ({
                         {food.servingAmount * selectedMultiplier} {food.servingUnit} •{' '}
                         <span className="gold-text">{Math.round(food.calories * selectedMultiplier)} kcal</span> •{' '}
                         <span className="text-emerald-400">{(food.protein * selectedMultiplier).toFixed(1)}g P</span>
+                        {' · '}{(food.carbohydrates * selectedMultiplier).toFixed(1)}g C · {(food.fat * selectedMultiplier).toFixed(1)}g F
                       </div>
                     </div>
                     <div className="w-7 h-7 rounded bg-[#241e11] group-hover:bg-[#d4af37] text-[#d4af37] group-hover:text-black flex items-center justify-center transition-colors border border-[#d4af37]/30">
