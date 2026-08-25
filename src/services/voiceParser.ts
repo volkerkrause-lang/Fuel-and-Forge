@@ -44,6 +44,16 @@ export function parseVoiceInput(
 
   const items: ParsedVoiceItem[] = [];
 
+  const spokenQuantity = (() => {
+    const digitMatch = text.match(/\b(\d+(?:\.\d+)?)\b/);
+    if (digitMatch) return Number(digitMatch[1]);
+    const words: Record<string, number> = { a: 1, an: 1, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6 };
+    const match = text.match(/\b(a|an|one|two|three|four|five|six)\b/);
+    return match ? words[match[1]] : 1;
+  })();
+
+  const singular = (word: string) => word.replace(/\(.*?\)/g, '').replace(/ies$/, 'y').replace(/s$/, '');
+
   // Match existing composite meals first (e.g. "Alpen Original with milk", "Greek yoghurt bowl", "Protein smoothie", "Latte")
   for (const meal of availableMeals) {
     const mealNameLower = meal.name.toLowerCase();
@@ -96,17 +106,23 @@ export function parseVoiceInput(
     } else {
       for (const food of availableFoods) {
         const foodNameLower = food.name.toLowerCase();
-        const baseKeywords = foodNameLower.split(' ').filter(w => w.length > 3);
-        const matches = baseKeywords.some(kw => text.includes(kw));
+        const baseKeywords = foodNameLower.split(/[^a-z]+/).filter(w => w.length > 2);
+        const matches = baseKeywords.some(kw => {
+          const root = singular(kw);
+          return new RegExp(`\\b${root}s?\\b`).test(text);
+        });
         if (matches && !items.some(it => it.matchedFoodId === food.id)) {
+          const servingCountMatch = food.name.match(/\((\d+(?:\.\d+)?)\s*(?:eggs?|servings?|pieces?)\)/i);
+          const servingCount = servingCountMatch ? Number(servingCountMatch[1]) : 1;
+          const multiplier = servingCountMatch ? Math.max(0.1, spokenQuantity / servingCount) : 1;
           items.push({
-            name: food.name,
-            amount: food.servingAmount,
+            name: spokenQuantity === 1 && /eggs?/i.test(food.name) ? 'Boiled egg' : food.name,
+            amount: Number((food.servingAmount * multiplier).toFixed(1)),
             unit: food.servingUnit,
-            calories: food.calories,
-            protein: food.protein,
-            carbs: food.carbohydrates,
-            fat: food.fat,
+            calories: Math.round(food.calories * multiplier),
+            protein: Number((food.protein * multiplier).toFixed(1)),
+            carbs: Number((food.carbohydrates * multiplier).toFixed(1)),
+            fat: Number((food.fat * multiplier).toFixed(1)),
             matchedFoodId: food.id,
           });
         }
@@ -131,7 +147,7 @@ export function parseVoiceInput(
     }
   }
 
-  // Fallback if nothing matched: create a sensible custom entry based on input text
+  // Unknown foods must be reviewed instead of silently receiving an invented calorie value.
   if (items.length === 0) {
     const cleanName = rawTranscript
       .replace(/for (breakfast|lunch|dinner|snacks?)/gi, '')
@@ -141,10 +157,10 @@ export function parseVoiceInput(
       name: cleanName || 'Custom Voice Item',
       amount: 1,
       unit: 'portion',
-      calories: 320,
-      protein: 15,
-      carbs: 35,
-      fat: 10,
+      calories: 0,
+      protein: 0,
+      carbs: 0,
+      fat: 0,
     });
   }
 
@@ -161,7 +177,7 @@ export function parseVoiceInput(
     totalProtein,
     totalCarbs,
     totalFat,
-    confidence: 0.92,
+    confidence: items.some((item) => item.matchedFoodId || item.matchedMealId) ? 0.92 : 0.2,
   };
 }
 

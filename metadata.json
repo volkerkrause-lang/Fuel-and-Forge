@@ -1,5 +1,5 @@
 {
-  "name": "Forge & Fuel",
+  "name": "Fuel & Forge",
   "description": "Evidence-aware fitness and nutrition tracker with intelligent Fuel Gauge, Momentum forge core, workout progression, contextual Fast Add, voice food logging, and water tracking.",
   "requestFramePermissions": ["microphone"],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]

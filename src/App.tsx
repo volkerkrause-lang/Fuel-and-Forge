@@ -23,6 +23,7 @@ import { Header } from './components/Header';
 import { Navbar, NavigationTab } from './components/Navbar';
 import { WeekSelector } from './components/WeekSelector';
 import { FuelGauge } from './components/FuelGauge';
+import { WeeklyWorkoutTracker } from './components/WeeklyWorkoutTracker';
 import { MacroBars } from './components/MacroBars';
 import { WaterTracker } from './components/WaterTracker';
 import { FoodDiary } from './components/FoodDiary';
@@ -257,6 +258,28 @@ export const App: React.FC = () => {
     }
   };
 
+  const handleToggleWeeklyWorkout = (slot: number) => {
+    const now = new Date();
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+    monday.setHours(0, 0, 0, 0);
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 7);
+    const weekly = sessions
+      .filter((s) => s.isCompleted && new Date(`${s.date}T00:00:00`) >= monday && new Date(`${s.date}T00:00:00`) < sunday)
+      .sort((a, b) => a.startTime - b.startTime);
+
+    let updated: WorkoutSession[];
+    if (slot < weekly.length) {
+      updated = sessions.filter((s) => s.id !== weekly[slot].id);
+    } else {
+      const quick = StorageService.createSessionFromRoutine(routine, new Date().toISOString().split('T')[0]);
+      updated = [{ ...quick, id: `quick_${Date.now()}`, endTime: Date.now(), isCompleted: true, exercises: [] }, ...sessions];
+    }
+    setSessions(updated);
+    StorageService.saveWorkoutSessions(updated);
+  };
+
   // --- Measurement Actions ---
   const handleAddMeasurement = (m: Omit<BodyMeasurement, 'id'>) => {
     const newM: BodyMeasurement = {
@@ -341,7 +364,7 @@ export const App: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `forge-and-fuel-backup-${selectedDate}.json`;
+    a.download = `fuel-and-forge-backup-${selectedDate}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -389,6 +412,12 @@ export const App: React.FC = () => {
               foodLogs={foodLogs}
               sessions={sessions}
               targetCalories={targets.calories}
+            />
+
+            <WeeklyWorkoutTracker
+              sessions={sessions}
+              target={settings.targetWorkoutsPerWeek || 3}
+              onToggle={handleToggleWeeklyWorkout}
             />
 
             {/* Fuel Gauge Card */}
@@ -444,6 +473,10 @@ export const App: React.FC = () => {
                 routine={routine}
                 onStartWorkout={handleStartWorkout}
                 onResetRoutine={handleResetRoutineToDefault}
+                onUpdateRoutine={(updated) => {
+                  setRoutine(updated);
+                  StorageService.saveWorkoutRoutine(updated);
+                }}
               />
             )}
           </div>

@@ -57,7 +57,7 @@ export const Header: React.FC<HeaderProps> = ({
           <div>
             <div className="flex items-baseline space-x-1.5">
               <span className="serif font-bold tracking-tight text-lg text-white uppercase">
-                FORGE <span className="gold-text">&</span> FUEL
+                FUEL <span className="gold-text">&</span> FORGE
               </span>
             </div>
             <div className="text-[10px] uppercase tracking-widest text-gray-400 flex items-center space-x-1.5">

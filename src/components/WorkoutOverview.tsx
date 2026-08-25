@@ -6,13 +6,19 @@ interface WorkoutOverviewProps {
   routine: WorkoutRoutine;
   onStartWorkout: () => void;
   onResetRoutine: () => void;
+  onUpdateRoutine: (routine: WorkoutRoutine) => void;
 }
 
 export const WorkoutOverview: React.FC<WorkoutOverviewProps> = ({
   routine,
   onStartWorkout,
   onResetRoutine,
+  onUpdateRoutine,
 }) => {
+  const updateExercise = (index: number, field: string, value: number) => {
+    const exercises = routine.exercises.map((exercise, i) => i === index ? { ...exercise, [field]: value } : exercise);
+    onUpdateRoutine({ ...routine, exercises });
+  };
   return (
     <div className="space-y-4">
       {/* Routine Hero Card */}
@@ -95,6 +101,19 @@ export const WorkoutOverview: React.FC<WorkoutOverviewProps> = ({
                       ? `${ex.setsCount} sets × ${ex.defaultReps} reps (BW)`
                       : `${ex.setsCount} sets × ${ex.defaultReps} reps (${ex.defaultWeightOrAssistanceKg}kg)`}
                   </p>
+                  <div className="flex flex-wrap gap-2 mt-2 text-[10px] font-mono">
+                    {ex.category === 'cardio' ? (
+                      <>
+                        <label>Minutes <input aria-label={`${ex.name} minutes`} type="number" min="1" value={ex.cardioDurationMin ?? 1} onChange={(e) => updateExercise(index, 'cardioDurationMin', Number(e.target.value))} className="w-16 ml-1 bg-[#0a0a0a] border border-white/10 rounded px-1.5 py-1 text-white" /></label>
+                        <label>Level <input aria-label={`${ex.name} level`} type="number" min="1" value={ex.cardioLevel ?? 1} onChange={(e) => updateExercise(index, 'cardioLevel', Number(e.target.value))} className="w-14 ml-1 bg-[#0a0a0a] border border-white/10 rounded px-1.5 py-1 text-white" /></label>
+                      </>
+                    ) : (
+                      <>
+                        {ex.category !== 'bodyweight' && <label>Kg <input aria-label={`${ex.name} kilograms`} type="number" min="0" step="0.5" value={ex.defaultWeightOrAssistanceKg ?? 0} onChange={(e) => updateExercise(index, 'defaultWeightOrAssistanceKg', Number(e.target.value))} className="w-16 ml-1 bg-[#0a0a0a] border border-white/10 rounded px-1.5 py-1 text-white" /></label>}
+                        <label>Reps <input aria-label={`${ex.name} repetitions`} type="number" min="1" value={ex.defaultReps ?? 1} onChange={(e) => updateExercise(index, 'defaultReps', Number(e.target.value))} className="w-14 ml-1 bg-[#0a0a0a] border border-white/10 rounded px-1.5 py-1 text-white" /></label>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
 

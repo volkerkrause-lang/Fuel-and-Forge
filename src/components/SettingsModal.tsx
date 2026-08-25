@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   X,
   Sliders,
@@ -79,6 +79,34 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   // WHY? Popover Explanations
   const [showWhyBmr, setShowWhyBmr] = useState(false);
   const [showWhyTdee, setShowWhyTdee] = useState(false);
+
+  // Refresh draft fields whenever settings is reopened so externally updated
+  // measurements/profile data never gets overwritten by stale form state.
+  useEffect(() => {
+    if (!isOpen) return;
+    setName(profile.name);
+    setSex(profile.sex);
+    setDob(profile.dob);
+    setHeightCm(profile.heightCm);
+    setCountry(profile.country);
+    setStartingWeightKg(profile.startingWeightKg);
+    setCurrentWeightKg(profile.currentWeightKg);
+    setTargetWeightKg(profile.targetWeightKg);
+    setWeightUnit(settings.units.weight);
+    setHeightUnit(settings.units.height);
+    setEnergyUnit(settings.units.energy);
+    setWaterUnit(settings.units.water);
+    setActivityLevel(settings.activityLevel);
+    setWeeklyGoal(settings.weeklyGoalKgChange);
+    setFitnessLocation(settings.fitnessLocation);
+    setTargetWorkouts(settings.targetWorkoutsPerWeek);
+    setMaintenanceMode(settings.maintenanceMode);
+    setIsAutomatic(settings.automaticTargets);
+    setManualCal(targets.calories);
+    setManualProt(targets.proteinGrams);
+    setManualCarbs(targets.carbsGrams);
+    setManualFat(targets.fatGrams);
+  }, [isOpen, profile, settings, targets]);
 
   if (!isOpen) return null;
 
