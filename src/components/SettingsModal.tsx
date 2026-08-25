@@ -136,7 +136,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       activityLevel,
       weeklyGoalKgChange: Number(weeklyGoal),
       fitnessLocation,
-      targetWorkoutsPerWeek: Number(targetWorkouts),
+      targetWorkoutsPerWeek: Math.max(3, Number(targetWorkouts)),
       automaticTargets: isAutomatic,
       maintenanceMode,
     };
