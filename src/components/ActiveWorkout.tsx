@@ -60,7 +60,7 @@ export const ActiveWorkout: React.FC<ActiveWorkoutProps> = ({
   };
 
   const handleToggleSet = (exerciseIndex: number, setIndex: number) => {
-    const updatedExercises = [...session.exercises];
+    const updatedExercises = session.exercises.map((ex) => ({ ...ex, sets: ex.sets.map((set) => ({ ...set })) }));
     const targetSet = updatedExercises[exerciseIndex].sets[setIndex];
     const willBeCompleted = !targetSet.isCompleted;
 
@@ -104,7 +104,7 @@ export const ActiveWorkout: React.FC<ActiveWorkoutProps> = ({
     field: keyof ExerciseSet,
     value: any
   ) => {
-    const updatedExercises = [...session.exercises];
+    const updatedExercises = session.exercises.map((ex) => ({ ...ex, sets: ex.sets.map((set) => ({ ...set })) }));
     const targetSet = updatedExercises[exerciseIndex].sets[setIndex];
     (targetSet as any)[field] = value;
 
@@ -132,7 +132,7 @@ export const ActiveWorkout: React.FC<ActiveWorkoutProps> = ({
   };
 
   const handleAddSet = (exerciseIndex: number) => {
-    const updatedExercises = [...session.exercises];
+    const updatedExercises = session.exercises.map((ex) => ({ ...ex, sets: ex.sets.map((set) => ({ ...set })) }));
     const ex = updatedExercises[exerciseIndex];
     const lastSet = ex.sets[ex.sets.length - 1];
 
@@ -152,7 +152,7 @@ export const ActiveWorkout: React.FC<ActiveWorkoutProps> = ({
   };
 
   const handleRemoveSet = (exerciseIndex: number, setIndex: number) => {
-    const updatedExercises = [...session.exercises];
+    const updatedExercises = session.exercises.map((ex) => ({ ...ex, sets: ex.sets.map((set) => ({ ...set })) }));
     const ex = updatedExercises[exerciseIndex];
     if (ex.sets.length <= 1) return;
 
