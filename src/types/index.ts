@@ -74,6 +74,7 @@ export interface Food {
   brand?: string;
   category?: string;
   isCustom?: boolean;
+  showOnHomeFastAdd?: boolean;
 }
 
 export interface MealIngredient {
