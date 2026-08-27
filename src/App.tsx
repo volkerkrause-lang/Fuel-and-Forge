@@ -146,6 +146,21 @@ export const App: React.FC = () => {
     });
   };
 
+  const handleHomeFastAddFood = (food: Food, mealType: MealSlot) => {
+    handleAddFoodLog({
+      date: selectedDate,
+      mealType,
+      name: food.name,
+      portionMultiplier: 1,
+      calories: food.calories,
+      protein: food.protein,
+      carbs: food.carbohydrates,
+      fat: food.fat,
+      originalItemType: 'food',
+      originalItemId: food.id,
+    });
+  };
+
   const handleVoiceConfirmLogs = (logsToAdd: Omit<FoodLog, 'id' | 'timestamp'>[]) => {
     const createdLogs: FoodLog[] = logsToAdd.map((l) => ({
       ...l,
@@ -463,7 +478,9 @@ export const App: React.FC = () => {
 
             <HomeFastAddMeals
               meals={meals}
-              onAdd={handleHomeFastAddMeal}
+              foods={foods}
+              onAddMeal={handleHomeFastAddMeal}
+              onAddFood={handleHomeFastAddFood}
               onManage={() => {
                 setActiveTab('more');
                 setMoreSubTab('meals');
