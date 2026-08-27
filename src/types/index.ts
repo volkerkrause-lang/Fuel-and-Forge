@@ -75,6 +75,10 @@ export interface Food {
   category?: string;
   isCustom?: boolean;
   showOnHomeFastAdd?: boolean;
+  sourceName?: string;
+  sourceUrl?: string;
+  sourceBasis?: string;
+  verifiedAt?: string;
 }
 
 export interface MealIngredient {
