@@ -5,6 +5,7 @@ import { searchUsdaFoods } from '../services/foodDataCentral';
 
 interface FastAddModalProps {
   isOpen: boolean;
+  date: string;
   mealSlot: MealSlot;
   foods: Food[];
   meals: Meal[];
@@ -15,6 +16,7 @@ interface FastAddModalProps {
 
 export const FastAddModal: React.FC<FastAddModalProps> = ({
   isOpen,
+  date,
   mealSlot,
   foods,
   meals,
@@ -70,7 +72,7 @@ export const FastAddModal: React.FC<FastAddModalProps> = ({
 
   const handleAddMeal = (meal: Meal) => {
     emitLog({
-      date: new Date().toISOString().split('T')[0],
+      date,
       mealType: mealSlot,
       name: meal.name,
       portionMultiplier: selectedMultiplier,
@@ -86,7 +88,7 @@ export const FastAddModal: React.FC<FastAddModalProps> = ({
 
   const handleAddFood = (food: Food) => {
     emitLog({
-      date: new Date().toISOString().split('T')[0],
+      date,
       mealType: mealSlot,
       name: food.name,
       portionMultiplier: selectedMultiplier,
@@ -104,7 +106,7 @@ export const FastAddModal: React.FC<FastAddModalProps> = ({
     e.preventDefault();
     if (!customName.trim() || customCalories === '') return;
     emitLog({
-      date: new Date().toISOString().split('T')[0],
+      date,
       mealType: mealSlot,
       name: customName.trim(),
       portionMultiplier: selectedMultiplier,
