@@ -32,6 +32,7 @@ import {
   SEED_INITIAL_WATER_LOGS,
 } from '../data/seedData';
 import { calculateNutritionTargets } from './calculator';
+import { VERIFIED_FOODS } from '../data/verifiedFoods';
 
 const STORAGE_KEYS = {
   VERSION: 'forge_fuel_version_v1',
@@ -50,6 +51,7 @@ const STORAGE_KEYS = {
   ACHIEVEMENTS: 'forge_fuel_achievements',
   ARTICLES: 'forge_fuel_articles',
   TIPS: 'forge_fuel_tips',
+  VERIFIED_FOODS_VERSION: 'forge_fuel_verified_foods_version',
 };
 
 export class StorageService {
@@ -62,6 +64,7 @@ export class StorageService {
         if (!localStorage.getItem(STORAGE_KEYS.VERSION)) {
           this.seedAllDefaults();
         }
+        this.addVerifiedFoodsMigration();
       }
       this.isInitialized = true;
     } catch (e) {
@@ -126,6 +129,28 @@ export class StorageService {
     this.initialize();
     const data = localStorage.getItem(STORAGE_KEYS.FOODS);
     return data ? JSON.parse(data) : SEED_FOODS;
+  }
+
+  private static addVerifiedFoodsMigration(): void {
+    const migrationVersion = '2026-08-27-v1';
+    if (localStorage.getItem(STORAGE_KEYS.VERIFIED_FOODS_VERSION) === migrationVersion) return;
+
+    const data = localStorage.getItem(STORAGE_KEYS.FOODS);
+    const stored: Food[] = data ? JSON.parse(data) : SEED_FOODS;
+    const verifiedById = new Map(VERIFIED_FOODS.map((food) => [food.id, food]));
+    const merged = stored.map((food) => {
+      const verified = verifiedById.get(food.id);
+      if (!verified) return food;
+      verifiedById.delete(food.id);
+      return {
+        ...food,
+        ...verified,
+        showOnHomeFastAdd: food.showOnHomeFastAdd ?? verified.showOnHomeFastAdd,
+      };
+    });
+    merged.push(...verifiedById.values());
+    localStorage.setItem(STORAGE_KEYS.FOODS, JSON.stringify(merged));
+    localStorage.setItem(STORAGE_KEYS.VERIFIED_FOODS_VERSION, migrationVersion);
   }
 
   public static saveFoods(foods: Food[]): void {
