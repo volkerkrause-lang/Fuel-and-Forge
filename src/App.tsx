@@ -27,6 +27,7 @@ import { WeeklyWorkoutTracker } from './components/WeeklyWorkoutTracker';
 import { MacroBars } from './components/MacroBars';
 import { WaterTracker } from './components/WaterTracker';
 import { FoodDiary } from './components/FoodDiary';
+import { HomeFastAddMeals } from './components/HomeFastAddMeals';
 import { FastAddModal } from './components/FastAddModal';
 import { VoiceLogModal } from './components/VoiceLogModal';
 import { WorkoutOverview } from './components/WorkoutOverview';
@@ -128,6 +129,21 @@ export const App: React.FC = () => {
     const updated = [...foodLogs, newLog];
     setFoodLogs(updated);
     StorageService.saveFoodLogs(updated);
+  };
+
+  const handleHomeFastAddMeal = (meal: Meal, mealType: MealSlot) => {
+    handleAddFoodLog({
+      date: selectedDate,
+      mealType,
+      name: meal.name,
+      portionMultiplier: 1,
+      calories: meal.totalCalories,
+      protein: meal.totalProtein,
+      carbs: meal.totalCarbs,
+      fat: meal.totalFat,
+      originalItemType: 'meal',
+      originalItemId: meal.id,
+    });
   };
 
   const handleVoiceConfirmLogs = (logsToAdd: Omit<FoodLog, 'id' | 'timestamp'>[]) => {
@@ -445,6 +461,15 @@ export const App: React.FC = () => {
               onResetWater={handleResetWaterToday}
             />
 
+            <HomeFastAddMeals
+              meals={meals}
+              onAdd={handleHomeFastAddMeal}
+              onManage={() => {
+                setActiveTab('more');
+                setMoreSubTab('meals');
+              }}
+            />
+
             {/* Food Diary */}
             <FoodDiary
               logs={dayFoodLogs}
@@ -544,7 +569,9 @@ export const App: React.FC = () => {
                 foods={foods}
                 meals={meals}
                 onSaveFood={(f) => {
-                  const updated = [...foods, f];
+                  const updated = foods.some((item) => item.id === f.id)
+                    ? foods.map((item) => item.id === f.id ? f : item)
+                    : [...foods, f];
                   setFoods(updated);
                   StorageService.saveFoods(updated);
                 }}
@@ -554,7 +581,9 @@ export const App: React.FC = () => {
                   StorageService.saveFoods(updated);
                 }}
                 onSaveMeal={(m) => {
-                  const updated = [...meals, m];
+                  const updated = meals.some((item) => item.id === m.id)
+                    ? meals.map((item) => item.id === m.id ? m : item)
+                    : [...meals, m];
                   setMeals(updated);
                   StorageService.saveMeals(updated);
                 }}
@@ -587,6 +616,7 @@ export const App: React.FC = () => {
       {/* Modals */}
       <FastAddModal
         isOpen={isFastAddOpen}
+        date={selectedDate}
         mealSlot={fastAddSlot}
         foods={foods}
         meals={meals}
