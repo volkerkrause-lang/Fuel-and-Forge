@@ -7,12 +7,14 @@ import {
   Pencil,
   Plus,
   Search,
+  Star,
   Trash2,
   Utensils,
   X,
 } from 'lucide-react';
 import { Food, Meal, MealSlot } from '../types';
 import { searchUsdaFoods } from '../services/foodDataCentral';
+import { isFoodShownOnHome } from '../services/quickAdd';
 
 interface FoodAndMealManagerProps {
   foods: Food[];
@@ -111,6 +113,7 @@ export const FoodAndMealManager: React.FC<FoodAndMealManagerProps> = ({
       id: `food_${Date.now()}`,
       category: food.category || 'Food lookup',
       isCustom: true,
+      showOnHomeFastAdd: true,
     });
   };
 
@@ -132,6 +135,7 @@ export const FoodAndMealManager: React.FC<FoodAndMealManagerProps> = ({
   const handleSaveFood = (event: React.FormEvent) => {
     event.preventDefault();
     if (!foodName.trim() || foodNutrition.calories === '') return;
+    const previous = foods.find((food) => food.id === editingFoodId);
     onSaveFood({
       id: editingFoodId || `food_${Date.now()}`,
       name: foodName.trim(),
@@ -143,6 +147,7 @@ export const FoodAndMealManager: React.FC<FoodAndMealManagerProps> = ({
       fat: Number(foodNutrition.fat || 0),
       category: 'My foods',
       isCustom: true,
+      showOnHomeFastAdd: previous?.showOnHomeFastAdd ?? true,
     });
     resetFoodForm();
     setShowFoodFinder(false);
@@ -265,6 +270,14 @@ export const FoodAndMealManager: React.FC<FoodAndMealManagerProps> = ({
                 </p>
               </div>
               <div className="flex gap-1">
+                <button
+                  onClick={() => onSaveFood({ ...food, showOnHomeFastAdd: !isFoodShownOnHome(food) })}
+                  className={`p-2 ${isFoodShownOnHome(food) ? 'text-[#d4af37]' : 'text-gray-500 hover:text-[#d4af37]'}`}
+                  aria-label={isFoodShownOnHome(food) ? `Remove ${food.name} from Home Fast Add` : `Show ${food.name} on Home Fast Add`}
+                  title={isFoodShownOnHome(food) ? 'Shown on Home' : 'Show on Home'}
+                >
+                  <Star className={`w-3.5 h-3.5 ${isFoodShownOnHome(food) ? 'fill-current' : ''}`} />
+                </button>
                 <button onClick={() => editFood(food)} className="p-2 text-gray-400 hover:text-[#d4af37]" aria-label={`Edit ${food.name}`}><Pencil className="w-3.5 h-3.5" /></button>
                 <button onClick={() => onDeleteFood(food.id)} className="p-2 text-gray-500 hover:text-rose-400" aria-label={`Delete ${food.name}`}><Trash2 className="w-3.5 h-3.5" /></button>
               </div>
