@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   Check,
+  BadgeCheck,
   Database,
   Layers,
   LoaderCircle,
@@ -11,6 +12,7 @@ import {
   Trash2,
   Utensils,
   X,
+  ExternalLink,
 } from 'lucide-react';
 import { Food, Meal, MealSlot } from '../types';
 import { searchUsdaFoods } from '../services/foodDataCentral';
@@ -268,6 +270,11 @@ export const FoodAndMealManager: React.FC<FoodAndMealManagerProps> = ({
                 <p className="text-[11px] font-mono text-gray-400 mt-1">
                   {food.servingAmount}{food.servingUnit} · <span className="gold-text">{food.calories} kcal</span> · {food.protein}g P · {food.carbohydrates}g C · {food.fat}g F
                 </p>
+                {food.sourceUrl && (
+                  <a href={food.sourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 mt-1.5 text-[9px] text-emerald-400 hover:text-emerald-300" title={food.sourceBasis}>
+                    <BadgeCheck className="w-3 h-3" /> Verified source <ExternalLink className="w-2.5 h-2.5" />
+                  </a>
+                )}
               </div>
               <div className="flex gap-1">
                 <button
